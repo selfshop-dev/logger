@@ -1,0 +1,59 @@
+name: Security Scan
+on:
+  pull_request: { branches: [ main ] }
+  push:         { branches: [ main ] }
+  schedule:
+    - cron: '0 7 * * 1'
+
+permissions:
+  contents: read
+  # security-events: write
+
+env:
+  BIN_DIR: ${{ github.workspace }}/bin
+
+jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    name: govulncheck
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install govulncheck
+        run: GOBIN="$BIN_DIR" go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Add tools to PATH
+        run: echo "$BIN_DIR" >> "$GITHUB_PATH"
+
+      - name: Run govulncheck
+        run: govulncheck ./...
+
+  trivy:
+    runs-on: ubuntu-latest
+    name: trivy
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          scanners: vuln
+          format: table
+          exit-code: '1'
+
+      # - name: Upload Trivy results to GitHub Security
+      #   if: always()
+      #   uses: github/codeql-action/upload-sarif@v4
+      #   with:
+      #     sarif_file: trivy-results.sarif
