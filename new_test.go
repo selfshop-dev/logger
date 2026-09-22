@@ -195,7 +195,7 @@ func TestNew_WithDevelopment(t *testing.T) {
 
 		assert.Contains(t, output, "INFO")
 		assert.Contains(t, output, "hello")
-		assert.NotEmpty(t, 0, len(output))
+		assert.NotEmpty(t, output)
 	})
 
 	t.Run("json is still json in development", func(t *testing.T) {

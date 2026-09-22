@@ -95,7 +95,7 @@ func TestStack_Free(t *testing.T) {
 	// Assert
 	assert.Nil(t, stack.pcs)
 	assert.Nil(t, stack.frames)
-	assert.Len(t, storageLen, len(stack.storage))
+	assert.Len(t, stack.storage, storageLen)
 }
 
 func captureDirect() *stack {
