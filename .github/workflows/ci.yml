@@ -1,0 +1,98 @@
+name: CI
+on:
+  pull_request: { branches: [ main ] }
+  push:         { branches: [ main ] }
+
+permissions: { contents: read }
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Check go mod
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.13
+          skip-cache: true
+
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Test
+        run: go test ./...
+
+      - name: Test with race detector
+        run: go test -race ./...
+
+      - name: Test with coverage
+        run: |
+          packages=$(
+            go list ./... |
+            grep -v -E '/(vendor|mocks|testdata)(/|$)' || true
+          )
+          test -n "$packages"
+          go test \
+            -race \
+            -covermode=atomic \
+            -coverprofile=coverage.out \
+            $packages
+
+      - name: Coverage report
+        run: |
+          go tool cover -func=coverage.out | tee coverage.txt
+          coverage=$(
+            awk '/^total:/ {
+              gsub("%", "", $3)
+              print $3
+            }' coverage.txt
+          )
+          awk -v coverage="$coverage" 'BEGIN {
+            if (coverage < 100) {
+              printf "coverage is %.1f%%, required 100.0%%\n", coverage
+              exit 1
+            }
+          }'
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.out
+          fail_ci_if_error: true
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          retention-days: 30
+          path: |
+            coverage.out
+            coverage.txt

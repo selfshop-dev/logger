@@ -1,0 +1,40 @@
+name: CodeQL
+on:
+  pull_request: { branches: [ main ] }
+  push:         { branches: [ main ] }
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    name: Analyze (go)
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: go
+          config-file: ./.github/codeql-default-config.yml
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v4
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:go
