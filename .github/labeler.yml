@@ -1,0 +1,85 @@
+version: v1
+
+labels:
+  - label: '💥 Breaking Change'
+    sync: true
+    matcher: { title: '^[a-z]+(\(.+\))?!:.*' }
+
+  - label: '✨ Feature'
+    sync: true
+    matcher: { title: '^feat(\(.+\))?!?:.*' }
+
+  - label: '🐛 Bug'
+    sync: true
+    matcher: { title: '^fix(\(.+\))?!?:.*' }
+
+  - label: '🔄 Refactor'
+    sync: true
+    matcher: { title: '^refactor(\(.+\))?!?:.*' }
+
+  - label: '⚡️ Performance'
+    sync: true
+    matcher: { title: '^perf(\(.+\))?!?:.*' }
+
+  - label: '🧹 Chore'
+    sync: true
+    matcher: { title: '^chore(\(.+\))?!?:.*' }
+
+  - label: '📚 Documentation'
+    sync: true
+    matcher: { title: '^docs(\(.+\))?!?:.*' }
+
+  - label: '🧪 Testing'
+    sync: true
+    matcher: { title: '^test(\(.+\))?!?:.*' }
+
+  - label: '🎨 Code Style'
+    sync: true
+    matcher: { title: '^style(\(.+\))?!?:.*' }
+
+  - label: '🛡️ Infrastructure / CI'
+    sync: true
+    matcher: { title: '^(ci|build)(\(.+\))?!?:.*' }
+
+  - label: '🔒 Security'
+    sync: true
+    matcher: { title: '^security(\(.+\))?!?:.*' }
+
+  - label: '🤖 Dependencies'
+    sync: true
+    matcher: { title: '^(deps?|chore\(deps\)|dependabot):.*' }
+
+  - label: 'size: s'
+    sync: true
+    matcher:
+      files: { count: { gte: 1, lte: 10 } }
+
+  - label: 'size: m'
+    sync: true
+    matcher:
+      files: { count: { gte: 11, lte: 30 } }
+
+  - label: 'size: l'
+    sync: true
+    matcher:
+      files: { count: { gte: 31 } }
+
+checks:
+  - context: 'Semantic PR'
+    url: 'https://www.conventionalcommits.org'
+    labels:
+      any:
+        - '✨ Feature'
+        - '🐛 Bug'
+        - '🔄 Refactor'
+        - '⚡️ Performance'
+        - '🧹 Chore'
+        - '📚 Documentation'
+        - '🧪 Testing'
+        - '🎨 Code Style'
+        - '🛡️ Infrastructure / CI'
+        - '🔒 Security'
+        - '🤖 Dependencies'
+    description:
+      success: 'Conventional commit prefix found.'
+      failure: 'Add a conventional commit prefix: feat:, fix:, chore:, etc.'
