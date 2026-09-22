@@ -1,0 +1,56 @@
+version: '2'
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+run:
+  modules-download-mode: readonly
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    # Core correctness
+    - gocritic
+    - errcheck
+    - sloglint
+    - contextcheck
+    - govet
+    - gosec
+    - staticcheck
+    - ineffassign
+    - loggercheck
+    - unused
+    - nilerr
+    - nilnesserr
+    - asciicheck
+    - bidichk
+    - gocheckcompilerdirectives
+    - errorlint
+    - asasalint
+    - durationcheck
+
+    # Tests
+    - testifylint
+    - testableexamples
+    - thelper
+    - usetesting
+    # - paralleltest
+    # - tparallel
+
+  settings:
+    govet:       { enable-all: true, disable: [ fieldalignment ] }
+    testifylint: { enable-all: true }
+
+formatters:
+  enable:
+    - goimports
+    - gofmt
+
+  settings:
+    goimports: { local-prefixes: [ github.com/selfshop-dev/logger ] }
+    gofmt:
+      rewrite-rules:
+        - pattern:     'interface{}'
+          replacement: 'any'
